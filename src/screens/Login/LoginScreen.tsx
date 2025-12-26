@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLoginController } from './useLoginController';
@@ -47,25 +48,10 @@ export const LoginScreen = () => {
           marginBottom: spacing.xxl,
         },
         logo: {
-          width: 60,
-          height: 60,
+          width: 200,
+          height: 120,
           marginBottom: spacing.md,
-          // Placeholder para logo - substituir por Image quando tiver o logo
-          backgroundColor: colors.card,
-          borderRadius: borderRadius.md,
-          justifyContent: 'center',
-          alignItems: 'center',
-        },
-        logoText: {
-          ...typography.h1,
-          color: colors.foreground,
-          marginBottom: spacing.xs,
-        },
-        logoSubtext: {
-          ...typography.caption,
-          color: colors.mutedForeground,
-          textTransform: 'uppercase',
-          letterSpacing: 1,
+          resizeMode: 'contain',
         },
         card: {
           backgroundColor: colors.card,
@@ -132,14 +118,12 @@ export const LoginScreen = () => {
   const GoogleIcon = () => (
     <View
       style={{
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#4285F4',
+        width: 20,
+        height: 20,
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-      <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: 'bold' }}>G</Text>
+      <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>G</Text>
     </View>
   );
 
@@ -153,18 +137,17 @@ export const LoginScreen = () => {
           keyboardShouldPersistTaps="handled">
           {/* Logo Section */}
           <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Text style={{ color: colors.foreground, fontSize: 24 }}>👑</Text>
-            </View>
-            <Text style={styles.logoText}>SiaoPlay</Text>
-            <Text style={styles.logoSubtext}>Streaming Platform</Text>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={styles.logo}
+            />
           </View>
 
           {/* Login Card */}
           <View style={styles.card}>
             <Text style={styles.title}>Fazer Login</Text>
             <Text style={styles.subtitle}>
-              Entre com suas credenciais ou use login social
+              Use suas credenciais ou use login social
             </Text>
 
             {/* Social Login Button */}

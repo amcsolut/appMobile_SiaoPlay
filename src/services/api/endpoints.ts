@@ -12,6 +12,126 @@ import { ApiResponse } from '../../types';
 
 export const homeService = {
   /**
+   * GET - Buscar showcase unificado (slideshow)
+   * @example
+   * const data = await homeService.getUnifiedShowcase();
+   */
+  getUnifiedShowcase: async (): Promise<ApiResponse<{
+    id: string;
+    is_active: boolean;
+    items: Array<{
+      id: string;
+      showcase_id: string;
+      content_type: string;
+      content_id: string;
+      order: number;
+      is_active: boolean;
+      content: any;
+    }>;
+  }>> => {
+    const response = await apiClient.get('/showcase/unified');
+    return response.data;
+  },
+
+  /**
+   * GET - Buscar filmes publicados
+   */
+  getPublishedMovies: async (): Promise<{
+    data: any[];
+    limit: number;
+    offset: number;
+    total: number;
+  }> => {
+    const response = await apiClient.get('/movies/published');
+    return response.data;
+  },
+
+  /**
+   * GET - Buscar filme por ID
+   */
+  getMovieById: async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/movies/${id}`);
+    return response.data;
+  },
+
+  /**
+   * GET - Buscar séries publicadas
+   */
+  getPublishedSeries: async (): Promise<{
+    data: any[];
+    limit: number;
+    offset: number;
+    total: number;
+  }> => {
+    const response = await apiClient.get('/series/published');
+    return response.data;
+  },
+
+  /**
+   * GET - Buscar série por ID
+   */
+  getSeriesById: async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/series/${id}`);
+    return response.data;
+  },
+
+  /**
+   * GET - Buscar temporadas de uma série
+   */
+  getSeriesSeasons: async (seriesId: string): Promise<any[]> => {
+    const response = await apiClient.get(`/series/${seriesId}/seasons`);
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
+   * GET - Buscar episódios de uma temporada
+   */
+  getSeasonEpisodes: async (seasonId: string): Promise<any[]> => {
+    const response = await apiClient.get(`/seasons/${seasonId}/episodes`);
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
+   * GET - Buscar audiobooks publicados
+   */
+  getPublishedAudiobooks: async (): Promise<any[]> => {
+    const response = await apiClient.get('/audiobooks/published');
+    // A API retorna array diretamente, não encapsulado
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
+   * GET - Buscar álbuns publicados
+   */
+  getPublishedAlbums: async (): Promise<{
+    data: any[];
+    limit: number;
+    offset: number;
+    total: number;
+  }> => {
+    const response = await apiClient.get('/albums/published');
+    return response.data;
+  },
+
+  /**
+   * GET - Buscar ebooks publicados
+   */
+  getPublishedEbooks: async (): Promise<any[]> => {
+    const response = await apiClient.get('/ebooks/published');
+    // A API retorna array diretamente, não encapsulado
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
+   * GET - Buscar cursos
+   */
+  getCourses: async (): Promise<any[]> => {
+    const response = await apiClient.get('/courses');
+    // A API retorna array diretamente, não encapsulado
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
    * GET - Buscar dados da home
    * @example
    * const data = await homeService.getData();
@@ -74,12 +194,25 @@ export const userService = {
   /**
    * POST - Login
    * @param credentials - Email e senha
+   * Retorna: { access_token, refresh_token, token_type, user, permission_level }
    */
   login: async (credentials: {
     email: string;
     password: string;
-  }): Promise<ApiResponse<{ token: string; user: any }>> => {
+  }): Promise<{
+    access_token: string;
+    refresh_token: string;
+    token_type: string;
+    user: any;
+    permission_level: number;
+  }> => {
     const response = await apiClient.post('/auth/login', credentials);
+    
+    // Log da resposta bruta em desenvolvimento
+    if (__DEV__) {
+      console.log('[API] Resposta bruta do login:', JSON.stringify(response.data, null, 2));
+    }
+    
     return response.data;
   },
 

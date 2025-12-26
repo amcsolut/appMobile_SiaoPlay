@@ -25,6 +25,8 @@ export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Profile: undefined;
+  MovieDetail: { id: string };
+  SeriesDetail: { id: string };
   // Adicione outras rotas aqui
 };
 

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ImageSourcePropType,
+  ViewStyle,
 } from 'react-native';
 import { spacing, borderRadius, typography } from '../../theme';
 import { useTheme } from '../../hooks/useTheme';
@@ -16,7 +17,8 @@ export interface ContentCardProps {
   subtitle?: string;
   image?: string | ImageSourcePropType;
   onPress?: () => void;
-  type?: 'video' | 'series' | 'audiobook' | 'album' | 'ebook';
+  type?: 'video' | 'series' | 'audiobook' | 'album' | 'ebook' | 'course';
+  style?: ViewStyle;
 }
 
 export const ContentCard: React.FC<ContentCardProps> = ({
@@ -25,6 +27,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
   image,
   onPress,
   type = 'video',
+  style,
 }) => {
   const { colors } = useTheme();
 
@@ -44,6 +47,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
       audiobook: '🎧',
       album: '🎵',
       ebook: '📚',
+      course: '📚',
     };
 
     return (
@@ -55,7 +59,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
 
   return (
     <TouchableOpacity
-      style={[styles.container, { backgroundColor: colors.card }]}
+      style={[styles.container, { backgroundColor: colors.card }, style]}
       onPress={onPress}
       activeOpacity={0.8}>
       <View style={styles.imageContainer}>{renderImage()}</View>
@@ -79,10 +83,9 @@ export const ContentCard: React.FC<ContentCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: 140,
-    marginRight: spacing.md,
     borderRadius: borderRadius.md,
     overflow: 'hidden',
+    marginBottom: spacing.md,
   },
   imageContainer: {
     width: '100%',

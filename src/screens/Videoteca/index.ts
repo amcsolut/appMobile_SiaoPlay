@@ -1,0 +1,2 @@
+export { VideotecaScreen } from './VideotecaScreen';
+

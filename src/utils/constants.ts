@@ -1,16 +1,49 @@
+import { Platform } from 'react-native';
+
 export const APP_NAME = 'SiaoPlay';
 export const APP_VERSION = '0.0.1';
 
 // ============================================
 // CONFIGURAÇÃO DA API
 // ============================================
-// Altere a URL abaixo para a URL da sua API
-// Para desenvolvimento local Android: use 'http://10.0.2.2:3000/api'
-// Para desenvolvimento local iOS: use 'http://localhost:3000/api'
-// Para produção: use a URL completa da sua API
-export const API_BASE_URL = __DEV__
-  ? 'http://localhost:8080/api/v1' // ⚠️ ALTERE AQUI COM A URL DA SUA API
-  : 'http://localhost:8080/api/v1'; // ⚠️ ALTERE AQUI COM A URL DA SUA API EM PRODUÇÃO
+// A URL é detectada automaticamente baseada na plataforma
+// Android Emulator: usa 10.0.2.2 (alias para localhost do host)
+// Android Físico: use o IP local da sua máquina (ex: 192.168.1.8)
+// iOS: usa localhost
+// Para produção: altere a URL abaixo
+
+// IP local da máquina - ALTERE AQUI se necessário
+// Para descobrir seu IP: hostname -I (Linux) ou ipconfig (Windows/Mac)
+const LOCAL_IP = '192.168.1.8'; // ⚠️ ALTERE COM O IP DA SUA MÁQUINA NA REDE LOCAL
+const API_PORT = '8080';
+const API_PATH = '/api/v1';
+
+// Função para obter a URL base da API
+const getApiBaseUrl = (): string => {
+  if (!__DEV__) {
+    // Produção - altere para a URL da sua API em produção
+    return 'https://api.siaoplay.com.br/api/v1';
+  }
+
+  // Desenvolvimento
+  if (Platform.OS === 'android') {
+    // Android: usar 10.0.2.2 para emulador ou IP local para dispositivo físico
+    // Para dispositivo físico, altere LOCAL_IP acima
+    // Para emulador, use 10.0.2.2
+    return `http://10.0.2.2:${API_PORT}${API_PATH}`;
+  } else if (Platform.OS === 'ios') {
+    // iOS: usar localhost
+    return `http://localhost:${API_PORT}${API_PATH}`;
+  }
+
+  // Fallback
+  return `http://localhost:${API_PORT}${API_PATH}`;
+};
+
+export const API_BASE_URL = getApiBaseUrl();
+
+// URL base do servidor (sem /api/v1) - útil para construir URLs de imagens
+export const SERVER_BASE_URL = API_BASE_URL.replace('/api/v1', '');
 
 // Configurações adicionais da API
 export const API_CONFIG = {

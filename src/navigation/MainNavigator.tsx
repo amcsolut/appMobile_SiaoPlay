@@ -1,21 +1,19 @@
 import React from 'react';
-import { Text } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { HomeScreen } from '../screens/Home/HomeScreen';
-import { DrawerContent } from '../components/ui/DrawerContent';
+import { VideotecaScreen } from '../screens/Videoteca';
+import { SeriesScreen } from '../screens/Series';
+import { AudiobooksScreen } from '../screens/Audiobooks';
+import { EbooksScreen } from '../screens/Ebooks';
+import { MusicasScreen } from '../screens/Musicas';
+import { CursosScreen } from '../screens/Cursos';
+import { CustomDrawerContent } from '../components/ui/DrawerContent';
 import { useTheme } from '../hooks/useTheme';
 
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
-
-// Placeholder screens - criar depois
-const VideotecaScreen = () => <HomeScreen />;
-const SeriesScreen = () => <HomeScreen />;
-const CursosScreen = () => <HomeScreen />;
-const AudiobooksScreen = () => <HomeScreen />;
-const EbooksScreen = () => <HomeScreen />;
-const MusicasScreen = () => <HomeScreen />;
 
 const TabNavigator = () => {
   const { colors } = useTheme();
@@ -41,7 +39,13 @@ const TabNavigator = () => {
         component={HomeScreen}
         options={{
           tabBarLabel: 'Início',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🏠</Text>,
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name="home"
+              size={24}
+              color={focused ? colors.primary : colors.mutedForeground}
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -49,7 +53,13 @@ const TabNavigator = () => {
         component={VideotecaScreen}
         options={{
           tabBarLabel: 'Videoteca',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🎬</Text>,
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name="movie"
+              size={24}
+              color={focused ? colors.primary : colors.mutedForeground}
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -57,7 +67,13 @@ const TabNavigator = () => {
         component={SeriesScreen}
         options={{
           tabBarLabel: 'Séries',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>📺</Text>,
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name="tv"
+              size={24}
+              color={focused ? colors.primary : colors.mutedForeground}
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -65,7 +81,13 @@ const TabNavigator = () => {
         component={MusicasScreen}
         options={{
           tabBarLabel: 'Músicas',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🎵</Text>,
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              name="music-note"
+              size={24}
+              color={focused ? colors.primary : colors.mutedForeground}
+            />
+          ),
         }}
       />
     </Tab.Navigator>
@@ -77,7 +99,7 @@ export const MainNavigator = () => {
 
   return (
     <Drawer.Navigator
-      drawerContent={(props) => <DrawerContent {...props} />}
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerShown: true,
         headerStyle: {
@@ -100,6 +122,54 @@ export const MainNavigator = () => {
         options={{
           headerTitle: 'SiaoPlay',
           drawerLabel: 'Início',
+        }}
+      />
+      <Drawer.Screen
+        name="Videoteca"
+        component={VideotecaScreen}
+        options={{
+          headerTitle: 'Videoteca',
+          drawerLabel: 'Videoteca',
+        }}
+      />
+      <Drawer.Screen
+        name="Series"
+        component={SeriesScreen}
+        options={{
+          headerTitle: 'Séries',
+          drawerLabel: 'Séries',
+        }}
+      />
+      <Drawer.Screen
+        name="Cursos"
+        component={CursosScreen}
+        options={{
+          headerTitle: 'Cursos',
+          drawerLabel: 'Cursos',
+        }}
+      />
+      <Drawer.Screen
+        name="Audiobooks"
+        component={AudiobooksScreen}
+        options={{
+          headerTitle: 'Audiobooks',
+          drawerLabel: 'Audiobooks',
+        }}
+      />
+      <Drawer.Screen
+        name="Ebooks"
+        component={EbooksScreen}
+        options={{
+          headerTitle: 'Ebooks',
+          drawerLabel: 'Ebooks',
+        }}
+      />
+      <Drawer.Screen
+        name="Musicas"
+        component={MusicasScreen}
+        options={{
+          headerTitle: 'Músicas',
+          drawerLabel: 'Músicas',
         }}
       />
     </Drawer.Navigator>

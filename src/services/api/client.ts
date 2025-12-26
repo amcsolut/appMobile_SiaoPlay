@@ -28,6 +28,16 @@ class ApiClient {
           const token = await storageService.getItem<string>(STORAGE_KEYS.USER_TOKEN);
           if (token && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
+            
+            // Log em desenvolvimento para debug
+            if (__DEV__) {
+              console.log(`[API] Token encontrado e adicionado ao header`);
+            }
+          } else {
+            // Log em desenvolvimento quando token não é encontrado
+            if (__DEV__) {
+              console.warn(`[API] Token não encontrado no storage para a requisição ${config.url}`);
+            }
           }
         } catch (error) {
           console.warn('Erro ao buscar token:', error);
@@ -37,6 +47,10 @@ class ApiClient {
         if (__DEV__) {
           console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, {
             baseURL: config.baseURL,
+            headers: {
+              ...config.headers,
+              Authorization: config.headers?.Authorization ? 'Bearer ***' : undefined,
+            },
             data: config.data,
           });
         }

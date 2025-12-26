@@ -33,6 +33,7 @@ export const Carousel: React.FC<CarouselProps> = ({
             key={item.id}
             {...item}
             onPress={() => onItemPress?.(item)}
+            style={styles.card}
           />
         ))}
       </ScrollView>
@@ -52,6 +53,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.lg,
+  },
+  card: {
+    width: 140,
+    marginRight: spacing.md,
   },
 });
 

@@ -1,0 +1,2 @@
+export { MusicasScreen } from './MusicasScreen';
+
