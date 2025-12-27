@@ -101,6 +101,22 @@ export const homeService = {
   },
 
   /**
+   * GET - Buscar audiobook por ID
+   */
+  getAudiobookById: async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/audiobooks/${id}`);
+    return response.data;
+  },
+
+  /**
+   * GET - Buscar capítulos de um audiobook
+   */
+  getAudiobookChapters: async (audiobookId: string): Promise<any[]> => {
+    const response = await apiClient.get(`/audiobooks/${audiobookId}/chapters`);
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
    * GET - Buscar álbuns publicados
    */
   getPublishedAlbums: async (): Promise<{
@@ -114,6 +130,30 @@ export const homeService = {
   },
 
   /**
+   * GET - Buscar álbum por ID
+   */
+  getAlbumById: async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/albums/${id}`);
+    return response.data;
+  },
+
+  /**
+   * GET - Buscar faixas de um álbum
+   */
+  getAlbumTracks: async (albumId: string): Promise<any[]> => {
+    const response = await apiClient.get(`/albums/${albumId}/tracks`);
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
+   * GET - Buscar songs de um álbum (endpoint alternativo)
+   */
+  getAlbumSongs: async (albumId: string): Promise<any[]> => {
+    const response = await apiClient.get(`/songs/album/${albumId}`);
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
    * GET - Buscar ebooks publicados
    */
   getPublishedEbooks: async (): Promise<any[]> => {
@@ -123,12 +163,76 @@ export const homeService = {
   },
 
   /**
+   * GET - Buscar ebook por ID
+   */
+  getEbookById: async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/ebooks/${id}`);
+    return response.data;
+  },
+
+  /**
    * GET - Buscar cursos
    */
   getCourses: async (): Promise<any[]> => {
     const response = await apiClient.get('/courses');
     // A API retorna array diretamente, não encapsulado
     return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
+   * GET - Buscar detalhes do curso por ID (com módulos e aulas)
+   */
+  getCourseDetails: async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/courses/${id}/details`);
+    return response.data;
+  },
+
+  /**
+   * GET - Buscar slideshow de filmes
+   */
+  getMoviesSlideshow: async (): Promise<any[]> => {
+    const response = await apiClient.get('/slideshows/movies/active');
+    return Array.isArray(response.data?.data) ? response.data.data : [];
+  },
+
+  /**
+   * GET - Buscar slideshow de séries
+   */
+  getSeriesSlideshow: async (): Promise<any[]> => {
+    const response = await apiClient.get('/slideshows/series/active');
+    return Array.isArray(response.data?.data) ? response.data.data : [];
+  },
+
+  /**
+   * GET - Buscar slideshow de cursos
+   */
+  getCoursesSlideshow: async (): Promise<any[]> => {
+    const response = await apiClient.get('/slideshows/active');
+    return Array.isArray(response.data?.data) ? response.data.data : [];
+  },
+
+  /**
+   * GET - Buscar slideshow de audiobooks
+   */
+  getAudiobooksSlideshow: async (): Promise<any[]> => {
+    const response = await apiClient.get('/slideshows/audiobooks/active');
+    return Array.isArray(response.data?.data) ? response.data.data : [];
+  },
+
+  /**
+   * GET - Buscar slideshow de ebooks
+   */
+  getEbooksSlideshow: async (): Promise<any[]> => {
+    const response = await apiClient.get('/slideshows/ebooks/active');
+    return Array.isArray(response.data?.data) ? response.data.data : [];
+  },
+
+  /**
+   * GET - Buscar slideshow de músicas/álbuns
+   */
+  getMusicSlideshow: async (): Promise<any[]> => {
+    const response = await apiClient.get('/slideshows/music/active');
+    return Array.isArray(response.data?.data) ? response.data.data : [];
   },
 
   /**

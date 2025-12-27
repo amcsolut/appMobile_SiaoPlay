@@ -2,6 +2,7 @@ import React from 'react';
 import { ContentListScreen } from '../ContentList/ContentListScreen';
 import { homeService } from '../../services/api/endpoints';
 import { ContentCardProps } from '../../components/ui/ContentCard';
+import { SlideshowItem } from '../../components/ui/Slideshow';
 import { SERVER_BASE_URL } from '../../utils/constants';
 
 const getImageUrl = (imagePath: string | undefined): string | undefined => {
@@ -21,6 +22,13 @@ const mapToContentCard = (ebook: any): ContentCardProps => ({
   type: 'ebook',
 });
 
+const mapToSlideshowItem = (item: any): SlideshowItem => ({
+  id: item.ebook.id,
+  title: item.ebook.title || '',
+  description: item.ebook.description || '',
+  image: getImageUrl(item.ebook.banner || item.ebook.poster),
+});
+
 export const EbooksScreen = () => {
   return (
     <ContentListScreen
@@ -28,6 +36,8 @@ export const EbooksScreen = () => {
       loadData={homeService.getPublishedEbooks}
       mapToContentCard={mapToContentCard}
       type="ebook"
+      loadSlideshowData={homeService.getEbooksSlideshow}
+      mapToSlideshowItem={mapToSlideshowItem}
     />
   );
 };

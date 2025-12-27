@@ -2,6 +2,7 @@ import React from 'react';
 import { ContentListScreen } from '../ContentList/ContentListScreen';
 import { homeService } from '../../services/api/endpoints';
 import { ContentCardProps } from '../../components/ui/ContentCard';
+import { SlideshowItem } from '../../components/ui/Slideshow';
 import { SERVER_BASE_URL } from '../../utils/constants';
 
 const getImageUrl = (imagePath: string | undefined): string | undefined => {
@@ -21,6 +22,13 @@ const mapToContentCard = (album: any): ContentCardProps => ({
   type: 'album',
 });
 
+const mapToSlideshowItem = (item: any): SlideshowItem => ({
+  id: item.album.id,
+  title: item.album.title || '',
+  description: item.album.description || '',
+  image: getImageUrl(item.album.banner || item.album.poster),
+});
+
 export const MusicasScreen = () => {
   return (
     <ContentListScreen
@@ -31,6 +39,8 @@ export const MusicasScreen = () => {
       }}
       mapToContentCard={mapToContentCard}
       type="album"
+      loadSlideshowData={homeService.getMusicSlideshow}
+      mapToSlideshowItem={mapToSlideshowItem}
     />
   );
 };

@@ -27,6 +27,10 @@ export type RootStackParamList = {
   Profile: undefined;
   MovieDetail: { id: string };
   SeriesDetail: { id: string };
+  AudiobookDetail: { id: string };
+  AlbumDetail: { id: string };
+  CourseDetail: { id: string };
+  EbookDetail: { id: string };
   // Adicione outras rotas aqui
 };
 

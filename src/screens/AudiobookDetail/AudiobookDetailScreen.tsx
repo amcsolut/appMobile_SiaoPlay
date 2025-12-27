@@ -16,29 +16,45 @@ import { SERVER_BASE_URL } from '../../utils/constants';
 import { useTheme } from '../../hooks/useTheme';
 import { spacing, typography, borderRadius } from '../../theme';
 import { RootStackParamList } from '../../types';
-import { VideoPlayerModal } from '../../components/ui/VideoPlayerModal';
+import { AudioPlayer } from '../../components/ui/AudioPlayer';
+import { AudioTrack } from '../../hooks/useAudioPlayer';
 
-type MovieDetailRouteProp = RouteProp<RootStackParamList, 'MovieDetail'>;
+type AudiobookDetailRouteProp = RouteProp<RootStackParamList, 'AudiobookDetail'>;
 
-interface Movie {
+interface Audiobook {
   id: string;
   title: string;
   description: string;
   poster?: string;
   banner?: string;
-  video_url?: string;
-  trailer?: string;
+  narrator?: string;
+  authors?: Array<{
+    id: string;
+    name: string;
+  }>;
   duration: number;
   rating: number;
-  age_rating: string;
   views: number;
-  genres: Array<{
+  genres?: Array<{
     id: string;
     name: string;
     description: string;
     color: string;
     icon: string;
   }>;
+}
+
+interface Chapter {
+  id: string;
+  audiobook_id: string;
+  chapter_type: string;
+  chapter_number: number;
+  title: string;
+  description: string;
+  audio_file: string;
+  duration: number;
+  is_published: boolean;
+  order: number;
 }
 
 const getImageUrl = (imagePath: string | undefined): string | undefined => {
@@ -59,56 +75,66 @@ const formatDuration = (minutes: number): string => {
   return `${mins}min`;
 };
 
-export const MovieDetailScreen: React.FC = () => {
-  const route = useRoute<MovieDetailRouteProp>();
+export const AudiobookDetailScreen: React.FC = () => {
+  const route = useRoute<AudiobookDetailRouteProp>();
   const navigation = useNavigation();
   const { id } = route.params;
   const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
-  const [movie, setMovie] = useState<Movie | null>(null);
+  const [audiobook, setAudiobook] = useState<Audiobook | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [videoModalVisible, setVideoModalVisible] = useState(false);
-  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
-  const [trailerModalVisible, setTrailerModalVisible] = useState(false);
-  const [selectedTrailerUrl, setSelectedTrailerUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    loadMovie();
+    loadAudiobook();
   }, [id]);
 
-  const loadMovie = async () => {
+  useEffect(() => {
+    if (audiobook) {
+      loadChapters();
+    }
+  }, [audiobook]);
+
+  const loadAudiobook = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await homeService.getMovieById(id);
-      setMovie(data);
+      const data = await homeService.getAudiobookById(id);
+      setAudiobook(data);
     } catch (err: any) {
-      setError(err.message || 'Erro ao carregar filme');
-      console.error('Erro ao carregar filme:', err);
+      setError(err.message || 'Erro ao carregar audiobook');
+      console.error('Erro ao carregar audiobook:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePlayTrailer = () => {
-    if (movie?.trailer) {
-      let url = movie.trailer.trim();
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = `https://${url}`;
-      }
-      setSelectedTrailerUrl(url);
-      setTrailerModalVisible(true);
-    }
-  };
+  const loadChapters = async () => {
+    if (!audiobook) return;
+    try {
+      const chaptersData = await homeService.getAudiobookChapters(audiobook.id);
+      setChapters(chaptersData);
 
-  const handlePlayVideo = () => {
-    if (movie?.video_url) {
-      let url = movie.video_url.trim();
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = `https://${url}`;
-      }
-      setSelectedVideoUrl(url);
-      setVideoModalVisible(true);
+      // Converter capítulos para formato de tracks
+      const tracks: AudioTrack[] = chaptersData
+        .filter((chapter: Chapter) => chapter.is_published && chapter.audio_file)
+        .sort((a: Chapter, b: Chapter) => a.order - b.order)
+        .map((chapter: Chapter) => ({
+          id: chapter.id,
+          url: chapter.audio_file,
+          title: chapter.title,
+          artist:
+            audiobook.authors?.[0]?.name ||
+            audiobook.narrator ||
+            'Desconhecido',
+          artwork: audiobook.poster || audiobook.banner,
+          duration: chapter.duration || 0,
+        }));
+
+      setAudioTracks(tracks);
+    } catch (err: any) {
+      console.error('Erro ao carregar capítulos:', err);
     }
   };
 
@@ -216,37 +242,9 @@ export const MovieDetailScreen: React.FC = () => {
           color: colors.foreground,
           fontWeight: '600',
         },
-        actionsContainer: {
-          flexDirection: 'row',
-          gap: spacing.md,
+        playerContainer: {
           marginTop: spacing.lg,
-        },
-        actionButton: {
-          flex: 1,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingVertical: spacing.md,
-          borderRadius: borderRadius.md,
-        },
-        primaryButton: {
-          backgroundColor: colors.primary,
-        },
-        secondaryButton: {
-          backgroundColor: colors.card,
-          borderWidth: 1,
-          borderColor: colors.border,
-        },
-        buttonText: {
-          ...typography.body,
-          fontWeight: '600',
-          marginLeft: spacing.sm,
-        },
-        primaryButtonText: {
-          color: colors.primaryForeground,
-        },
-        secondaryButtonText: {
-          color: colors.foreground,
+          marginBottom: spacing.lg,
         },
         loadingContainer: {
           flex: 1,
@@ -278,13 +276,13 @@ export const MovieDetailScreen: React.FC = () => {
     );
   }
 
-  if (error || !movie) {
+  if (error || !audiobook) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.errorContainer}>
           <Icon name="error-outline" size={48} color={colors.mutedForeground} />
           <Text style={styles.errorText}>
-            {error || 'Filme não encontrado'}
+            {error || 'Audiobook não encontrado'}
           </Text>
         </View>
       </SafeAreaView>
@@ -299,9 +297,9 @@ export const MovieDetailScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}>
         {/* Banner */}
         <View style={styles.bannerContainer}>
-          {movie.banner && (
+          {audiobook.banner && (
             <Image
-              source={{ uri: getImageUrl(movie.banner) }}
+              source={{ uri: getImageUrl(audiobook.banner) }}
               style={styles.banner}
             />
           )}
@@ -315,37 +313,41 @@ export const MovieDetailScreen: React.FC = () => {
 
         {/* Info */}
         <View style={styles.infoContainer}>
-          <Text style={styles.title}>{movie.title}</Text>
+          <Text style={styles.title}>{audiobook.title}</Text>
 
           {/* Meta Info */}
           <View style={styles.metaRow}>
             <View style={styles.ratingContainer}>
               <Icon name="star" size={16} color="#FFD700" />
-              <Text style={styles.ratingText}>{movie.rating}/10</Text>
+              <Text style={styles.ratingText}>{audiobook.rating}/10</Text>
             </View>
-            <View style={styles.metaItem}>
-              <Icon name="schedule" size={16} color={colors.mutedForeground} />
-              <Text style={styles.metaText}>
-                {formatDuration(movie.duration)}
-              </Text>
-            </View>
+            {audiobook.duration > 0 && (
+              <View style={styles.metaItem}>
+                <Icon name="schedule" size={16} color={colors.mutedForeground} />
+                <Text style={styles.metaText}>
+                  {formatDuration(audiobook.duration)}
+                </Text>
+              </View>
+            )}
             <View style={styles.metaItem}>
               <Icon name="visibility" size={16} color={colors.mutedForeground} />
-              <Text style={styles.metaText}>{movie.views} visualizações</Text>
+              <Text style={styles.metaText}>{audiobook.views} visualizações</Text>
             </View>
-            <View style={styles.metaItem}>
-              <Icon name="category" size={16} color={colors.mutedForeground} />
-              <Text style={styles.metaText}>{movie.age_rating} anos</Text>
-            </View>
+            {audiobook.narrator && (
+              <View style={styles.metaItem}>
+                <Icon name="mic" size={16} color={colors.mutedForeground} />
+                <Text style={styles.metaText}>{audiobook.narrator}</Text>
+              </View>
+            )}
           </View>
 
           {/* Description */}
-          <Text style={styles.description}>{movie.description}</Text>
+          <Text style={styles.description}>{audiobook.description}</Text>
 
           {/* Genres */}
-          {movie.genres && movie.genres.length > 0 && (
+          {audiobook.genres && audiobook.genres.length > 0 && (
             <View style={styles.genresContainer}>
-              {movie.genres.map((genre) => (
+              {audiobook.genres.map((genre) => (
                 <View
                   key={genre.id}
                   style={[
@@ -358,51 +360,22 @@ export const MovieDetailScreen: React.FC = () => {
             </View>
           )}
 
-          {/* Action Buttons */}
-          <View style={styles.actionsContainer}>
-            {movie.video_url && (
-              <TouchableOpacity
-                style={[styles.actionButton, styles.primaryButton]}
-                onPress={handlePlayVideo}>
-                <Icon name="play-arrow" size={24} color={colors.primaryForeground} />
-                <Text style={[styles.buttonText, styles.primaryButtonText]}>
-                  Assistir
-                </Text>
-              </TouchableOpacity>
-            )}
-            {movie.trailer && (
-              <TouchableOpacity
-                style={[styles.actionButton, styles.secondaryButton]}
-                onPress={handlePlayTrailer}>
-                <Icon name="movie" size={24} color={colors.foreground} />
-                <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-                  Trailer
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
+          {/* Audio Player */}
+          {audioTracks.length > 0 && (
+            <View style={styles.playerContainer}>
+              <AudioPlayer
+                tracks={audioTracks}
+                autoPlay={false}
+                showArtwork={true}
+                showTrackList={true}
+                onTrackEnd={() => {
+                  console.log('Todos os capítulos foram reproduzidos');
+                }}
+              />
+            </View>
+          )}
         </View>
       </ScrollView>
-
-      {/* Video Player Modal */}
-      <VideoPlayerModal
-        visible={videoModalVisible}
-        videoUrl={selectedVideoUrl || ''}
-        onClose={() => {
-          setVideoModalVisible(false);
-          setSelectedVideoUrl(null);
-        }}
-      />
-
-      {/* Trailer Player Modal */}
-      <VideoPlayerModal
-        visible={trailerModalVisible}
-        videoUrl={selectedTrailerUrl || ''}
-        onClose={() => {
-          setTrailerModalVisible(false);
-          setSelectedTrailerUrl(null);
-        }}
-      />
     </SafeAreaView>
   );
 };

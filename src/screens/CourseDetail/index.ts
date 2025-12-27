@@ -1,0 +1,2 @@
+export { CourseDetailScreen } from './CourseDetailScreen';
+

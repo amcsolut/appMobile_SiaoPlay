@@ -2,6 +2,7 @@ import React from 'react';
 import { ContentListScreen } from '../ContentList/ContentListScreen';
 import { homeService } from '../../services/api/endpoints';
 import { ContentCardProps } from '../../components/ui/ContentCard';
+import { SlideshowItem } from '../../components/ui/Slideshow';
 import { SERVER_BASE_URL } from '../../utils/constants';
 
 const getImageUrl = (imagePath: string | undefined): string | undefined => {
@@ -21,6 +22,13 @@ const mapToContentCard = (course: any): ContentCardProps => ({
   type: 'course',
 });
 
+const mapToSlideshowItem = (item: any): SlideshowItem => ({
+  id: item.course.id,
+  title: item.course.title || '',
+  description: item.course.description || '',
+  image: getImageUrl(item.course.banner || item.course.poster),
+});
+
 export const CursosScreen = () => {
   return (
     <ContentListScreen
@@ -28,6 +36,8 @@ export const CursosScreen = () => {
       loadData={homeService.getCourses}
       mapToContentCard={mapToContentCard}
       type="course"
+      loadSlideshowData={homeService.getCoursesSlideshow}
+      mapToSlideshowItem={mapToSlideshowItem}
     />
   );
 };

@@ -21,6 +21,7 @@ export interface SlideshowItem {
   title: string;
   description?: string;
   image?: string | ImageSourcePropType;
+  trailer?: string;
   onPress?: () => void;
 }
 
@@ -28,12 +29,14 @@ interface SlideshowProps {
   data: SlideshowItem[];
   onTrailerPress?: (item: SlideshowItem) => void;
   onInfoPress?: (item: SlideshowItem) => void;
+  showTrailerButton?: boolean;
 }
 
 export const Slideshow: React.FC<SlideshowProps> = ({
   data,
   onTrailerPress,
   onInfoPress,
+  showTrailerButton = true,
 }) => {
   const { colors } = useTheme();
   const carouselRef = useRef<any>(null);
@@ -75,19 +78,28 @@ export const Slideshow: React.FC<SlideshowProps> = ({
             </Text>
           )}
           <View style={styles.buttons}>
+            {showTrailerButton && item.trailer && (
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: colors.primary }]}
+                onPress={() => onTrailerPress?.(item)}
+                activeOpacity={0.8}>
+                <Text style={[styles.buttonText, { color: colors.primaryForeground }]}>
+                  ▶ Ver Trailer
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: colors.primary }]}
-              onPress={() => onTrailerPress?.(item)}
-              activeOpacity={0.8}>
-              <Text style={[styles.buttonText, { color: colors.primaryForeground }]}>
-                ▶ Ver Trailer
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.buttonOutline, { borderColor: colors.border }]}
+              style={[
+                styles.button,
+                showTrailerButton && item.trailer ? styles.buttonOutline : { backgroundColor: colors.primary },
+                showTrailerButton && item.trailer && { borderColor: colors.border },
+              ]}
               onPress={() => onInfoPress?.(item)}
               activeOpacity={0.8}>
-              <Text style={[styles.buttonText, { color: colors.foreground }]}>
+              <Text style={[
+                styles.buttonText,
+                { color: showTrailerButton && item.trailer ? colors.foreground : colors.primaryForeground }
+              ]}>
                 ℹ️ Informações
               </Text>
             </TouchableOpacity>

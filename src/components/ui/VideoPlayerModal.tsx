@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import YoutubePlayer from 'react-native-youtube-iframe';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../../hooks/useTheme';
 import { spacing, borderRadius } from '../../theme';
@@ -21,32 +22,34 @@ interface VideoPlayerModalProps {
   onClose: () => void;
 }
 
-// Função para converter URL do YouTube para formato embed
-const getYouTubeEmbedUrl = (url: string): string | null => {
-  let videoId = null;
+// Função para extrair ID do vídeo do YouTube
+const extractYouTubeVideoId = (url: string): string | null => {
+  if (!url) return null;
   
   // Padrão 1: https://www.youtube.com/watch?v=VIDEO_ID
   const watchMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
   if (watchMatch && watchMatch[1]) {
-    videoId = watchMatch[1];
-  }
-  
-  // Padrão 2: https://youtu.be/VIDEO_ID
-  if (!videoId) {
-    const shortMatch = url.match(/youtu\.be\/([^&\n?#]+)/);
-    if (shortMatch && shortMatch[1]) {
-      videoId = shortMatch[1];
+    const videoId = watchMatch[1].split('&')[0].split('?')[0];
+    if (videoId.length === 11) {
+      return videoId;
     }
   }
   
-  if (videoId && videoId.length === 11) {
-    // Remover parâmetros extras se houver
-    videoId = videoId.split('&')[0].split('?')[0];
-    // Usar parâmetros que funcionam melhor em WebView mobile
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&controls=1&fs=1&iv_load_policy=3&cc_load_policy=0`;
+  // Padrão 2: https://youtu.be/VIDEO_ID
+  const shortMatch = url.match(/youtu\.be\/([^&\n?#]+)/);
+  if (shortMatch && shortMatch[1]) {
+    const videoId = shortMatch[1].split('&')[0].split('?')[0];
+    if (videoId.length === 11) {
+      return videoId;
+    }
   }
   
   return null;
+};
+
+// Função para verificar se é YouTube
+const isYouTubeUrl = (url: string): boolean => {
+  return url.includes('youtube.com') || url.includes('youtu.be');
 };
 
 // Função para converter URL do Vimeo para formato embed
@@ -74,10 +77,6 @@ const getPandaVideosEmbedUrl = (url: string): string | null => {
 };
 
 const getEmbedUrl = (url: string): string | null => {
-  // Tentar YouTube primeiro
-  const youtubeEmbed = getYouTubeEmbedUrl(url);
-  if (youtubeEmbed) return youtubeEmbed;
-
   // Tentar Vimeo
   const vimeoEmbed = getVimeoEmbedUrl(url);
   if (vimeoEmbed) return vimeoEmbed;
@@ -96,94 +95,25 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   onClose,
 }) => {
   const { colors } = useTheme();
-  const [hasError, setHasError] = React.useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [playing, setPlaying] = useState(true);
 
-  const embedUrl = useMemo(() => {
-    if (!videoUrl) return null;
-    const url = getEmbedUrl(videoUrl);
-    console.log('[VideoPlayerModal] Original URL:', videoUrl);
-    console.log('[VideoPlayerModal] Embed URL:', url);
-    return url;
+  const isYouTube = useMemo(() => {
+    return videoUrl ? isYouTubeUrl(videoUrl) : false;
   }, [videoUrl]);
 
-  // Verificar se é YouTube
-  const isYouTube = videoUrl && (
-    videoUrl.includes('youtube.com') || 
-    videoUrl.includes('youtu.be')
-  );
-
-  // Extrair ID do vídeo do YouTube
   const youtubeVideoId = useMemo(() => {
-    if (!isYouTube) return null;
-    const watchMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
-    if (watchMatch && watchMatch[1]) {
-      return watchMatch[1].split('&')[0].split('?')[0];
-    }
-    return null;
+    if (!isYouTube || !videoUrl) return null;
+    return extractYouTubeVideoId(videoUrl);
+  }, [isYouTube, videoUrl]);
+
+  const embedUrl = useMemo(() => {
+    if (!videoUrl || isYouTube) return null;
+    return getEmbedUrl(videoUrl);
   }, [videoUrl, isYouTube]);
 
-  // URL do embed do YouTube para usar diretamente no WebView
-  const youtubeEmbedUrl = useMemo(() => {
-    if (isYouTube && youtubeVideoId) {
-      // Usar parâmetros que funcionam melhor em WebView mobile
-      // Remover origin para evitar problemas de CORS
-      return `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&controls=1&fs=1&iv_load_policy=3&cc_load_policy=0&widget_referrer=app`;
-    }
-    return null;
-  }, [isYouTube, youtubeVideoId]);
-
   const htmlContent = useMemo(() => {
-    // Para YouTube, usar iframe embed com configurações especiais
-    if (isYouTube && youtubeEmbedUrl) {
-      // Tentar usar o player do YouTube sem origin para evitar erro 153
-      const embedUrlNoOrigin = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=0&controls=1&fs=1&iv_load_policy=3&cc_load_policy=0`;
-      
-      return `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-            <style>
-              * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-              }
-              html, body {
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-                background: #000;
-                position: relative;
-              }
-              iframe {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                border: none;
-                display: block;
-              }
-            </style>
-          </head>
-          <body>
-            <iframe
-              id="video-player"
-              src="${embedUrlNoOrigin}"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-              webkitallowfullscreen
-              mozallowfullscreen
-              style="width: 100%; height: 100%;"
-            ></iframe>
-          </body>
-        </html>
-      `;
-    }
-    
     if (!embedUrl) return null;
 
     return `
@@ -247,6 +177,13 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
         container: {
           flex: 1,
           backgroundColor: '#000000',
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        youtubeContainer: {
+          width: SCREEN_WIDTH,
+          height: SCREEN_HEIGHT,
+          backgroundColor: '#000000',
         },
         closeButton: {
           position: 'absolute',
@@ -291,7 +228,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   }
 
   // Verificar se tem fonte válida
-  const hasValidSource = (isYouTube && youtubeEmbedUrl && htmlContent) || (!isYouTube && embedUrl && htmlContent);
+  const hasValidSource = (isYouTube && youtubeVideoId) || (!isYouTube && embedUrl && htmlContent);
 
   if (!hasValidSource) {
     return (
@@ -354,84 +291,80 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
           <Icon name="close" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <WebView
-          source={
-            isYouTube && youtubeEmbedUrl
-              ? { uri: youtubeEmbedUrl }
-              : { html: htmlContent || '' }
-          }
-          style={styles.webView}
-          allowsFullscreenVideo={true}
-          allowsInlineMediaPlayback={true}
-          mediaPlaybackRequiresUserAction={false}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          mixedContentMode="always"
-          originWhitelist={['*']}
-          setSupportMultipleWindows={false}
-          userAgent="Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
-          onShouldStartLoadWithRequest={(request) => {
-            // Permitir about:blank e recursos necessários
-            const url = request.url;
-            
-            if (url === 'about:blank' || !url || url.startsWith('data:') || url.startsWith('blob:')) {
-              return true;
-            }
-            
-            // Para YouTube, permitir apenas URLs do embed e recursos necessários
-            if (isYouTube) {
-              // Permitir todos os recursos do YouTube necessários para o player
-              if (
-                url.includes('youtube.com/embed/') ||
-                url.includes('youtube.com/api/') ||
-                url.includes('youtube.com/s/') ||
-                url.includes('youtube.com/yts/') ||
-                url.includes('google.com') ||
-                url.includes('gstatic.com') ||
-                url.includes('doubleclick.net') ||
-                url.includes('googlevideo.com') ||
-                url.includes('ytimg.com') ||
-                url.includes('googleapis.com')
-              ) {
-                return true;
-              }
-              // Bloquear redirecionamentos para watch, app ou outros
-              if (url.includes('youtube.com/watch') || 
-                  url.includes('youtube.com/app') ||
-                  url.includes('youtube.com/redirect') ||
-                  url.includes('youtube.com/channel') ||
-                  url.includes('youtube.com/user')) {
-                console.log('[VideoPlayerModal] Bloqueando redirecionamento:', url);
-                return false;
-              }
-              // Bloquear outros domínios
-              console.log('[VideoPlayerModal] Bloqueando domínio não permitido:', url);
-              return false;
-            }
-            
-            // Para outros serviços, permitir normalmente
-            return true;
-          }}
-          onError={(syntheticEvent) => {
-            const { nativeEvent } = syntheticEvent;
-            console.warn('WebView error: ', nativeEvent);
-            setHasError(true);
-          }}
-          onHttpError={(syntheticEvent) => {
-            const { nativeEvent } = syntheticEvent;
-            console.warn('WebView HTTP error: ', nativeEvent);
-            setHasError(true);
-          }}
-          onLoadEnd={() => {
-            setHasError(false);
-          }}
-          renderLoading={() => (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
-            </View>
-          )}
-        />
+
+        {isYouTube && youtubeVideoId ? (
+          <View style={styles.youtubeContainer}>
+            <YoutubePlayer
+              height={SCREEN_HEIGHT}
+              width={SCREEN_WIDTH}
+              videoId={youtubeVideoId}
+              play={playing}
+              onChangeState={(state) => {
+                if (state === 'ended') {
+                  setPlaying(false);
+                }
+              }}
+              onError={(error) => {
+                console.warn('YouTube Player error:', error);
+                setHasError(true);
+              }}
+              onReady={() => {
+                setLoading(false);
+                setHasError(false);
+              }}
+              initialPlayerParams={{
+                controls: true,
+                modestbranding: true,
+                rel: false,
+                iv_load_policy: 3,
+                cc_load_policy: 0,
+              }}
+            />
+            {loading && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+              </View>
+            )}
+          </View>
+        ) : (
+          <WebView
+            source={{ html: htmlContent || '' }}
+            style={styles.webView}
+            allowsFullscreenVideo={true}
+            allowsInlineMediaPlayback={true}
+            mediaPlaybackRequiresUserAction={false}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            mixedContentMode="always"
+            originWhitelist={['*']}
+            setSupportMultipleWindows={false}
+            onError={(syntheticEvent) => {
+              const { nativeEvent } = syntheticEvent;
+              console.warn('WebView error: ', nativeEvent);
+              setHasError(true);
+            }}
+            onHttpError={(syntheticEvent) => {
+              const { nativeEvent } = syntheticEvent;
+              console.warn('WebView HTTP error: ', nativeEvent);
+              setHasError(true);
+            }}
+            onLoadEnd={() => {
+              setLoading(false);
+              setHasError(false);
+            }}
+            renderLoading={() => (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+              </View>
+            )}
+          />
+        )}
+        {loading && !isYouTube && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+          </View>
+        )}
       </View>
     </Modal>
   );

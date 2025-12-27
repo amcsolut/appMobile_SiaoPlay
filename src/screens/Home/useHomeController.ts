@@ -190,8 +190,13 @@ export const useHomeController = () => {
       navigation.navigate('MovieDetail', { id: item.id });
     } else if (item.type === 'series') {
       navigation.navigate('SeriesDetail', { id: item.id });
+    } else if (item.type === 'audiobook') {
+      navigation.navigate('AudiobookDetail', { id: item.id });
+    } else if (item.type === 'album') {
+      navigation.navigate('AlbumDetail', { id: item.id });
+    } else if (item.type === 'ebook') {
+      navigation.navigate('EbookDetail', { id: item.id });
     } else {
-      // TODO: Implementar navegação para outros tipos
       console.log('Item pressed:', item);
     }
   };

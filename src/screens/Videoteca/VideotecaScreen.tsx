@@ -2,6 +2,7 @@ import React from 'react';
 import { ContentListScreen } from '../ContentList/ContentListScreen';
 import { homeService } from '../../services/api/endpoints';
 import { ContentCardProps } from '../../components/ui/ContentCard';
+import { SlideshowItem } from '../../components/ui/Slideshow';
 import { SERVER_BASE_URL } from '../../utils/constants';
 
 const getImageUrl = (imagePath: string | undefined): string | undefined => {
@@ -21,6 +22,14 @@ const mapToContentCard = (movie: any): ContentCardProps => ({
   type: 'video',
 });
 
+const mapToSlideshowItem = (item: any): SlideshowItem => ({
+  id: item.movie.id,
+  title: item.movie.title || '',
+  description: item.movie.description || '',
+  image: getImageUrl(item.movie.banner || item.movie.poster),
+  trailer: item.movie.trailer || item.movie.video_url,
+});
+
 export const VideotecaScreen = () => {
   return (
     <ContentListScreen
@@ -31,6 +40,8 @@ export const VideotecaScreen = () => {
       }}
       mapToContentCard={mapToContentCard}
       type="video"
+      loadSlideshowData={homeService.getMoviesSlideshow}
+      mapToSlideshowItem={mapToSlideshowItem}
     />
   );
 };

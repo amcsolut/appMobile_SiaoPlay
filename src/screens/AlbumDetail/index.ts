@@ -1,0 +1,2 @@
+export { AlbumDetailScreen } from './AlbumDetailScreen';
+
