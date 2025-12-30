@@ -42,6 +42,7 @@ export const VideotecaScreen = () => {
       type="video"
       loadSlideshowData={homeService.getMoviesSlideshow}
       mapToSlideshowItem={mapToSlideshowItem}
+      horizontalCard={true}
     />
   );
 };

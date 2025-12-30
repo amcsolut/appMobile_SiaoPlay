@@ -20,24 +20,8 @@ const API_PATH = '/api/v1';
 
 // Função para obter a URL base da API
 const getApiBaseUrl = (): string => {
-  if (!__DEV__) {
-    // Produção - altere para a URL da sua API em produção
-    return 'https://api.siaoplay.com.br/api/v1';
-  }
-
-  // Desenvolvimento
-  if (Platform.OS === 'android') {
-    // Android: usar 10.0.2.2 para emulador ou IP local para dispositivo físico
-    // Para dispositivo físico, altere LOCAL_IP acima
-    // Para emulador, use 10.0.2.2
-    return `http://10.0.2.2:${API_PORT}${API_PATH}`;
-  } else if (Platform.OS === 'ios') {
-    // iOS: usar localhost
-    return `http://localhost:${API_PORT}${API_PATH}`;
-  }
-
-  // Fallback
-  return `http://localhost:${API_PORT}${API_PATH}`;
+  // Usar sempre a URL de produção (mesmo em desenvolvimento)
+  return 'https://api.siaoplay.com.br/api/v1';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

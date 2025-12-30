@@ -24,6 +24,8 @@ interface ContentListScreenProps {
   type: ContentCardProps['type'];
   loadSlideshowData?: () => Promise<any[]>;
   mapToSlideshowItem?: (item: any) => SlideshowItem;
+  squareCard?: boolean; // Se true, usa formato quadrado (width = height)
+  horizontalCard?: boolean; // Se true, usa formato retangular horizontal (mais largo que alto)
 }
 
 // Função helper para construir URL completa da imagem
@@ -45,6 +47,8 @@ export const ContentListScreen: React.FC<ContentListScreenProps> = ({
   type,
   loadSlideshowData,
   mapToSlideshowItem,
+  squareCard = false,
+  horizontalCard = false,
 }) => {
   const { colors } = useTheme();
   const navigation = useNavigation<NavigationProp>();
@@ -183,14 +187,21 @@ export const ContentListScreen: React.FC<ContentListScreenProps> = ({
           width: CARD_WIDTH,
         },
       }),
-    [colors]
+    [colors, squareCard, horizontalCard]
   );
+
+  // Calcula altura para imagem horizontal (proporção aproximada 1.7:1, similar ao carrossel)
+  const horizontalImageHeight = horizontalCard ? Math.round(CARD_WIDTH * 0.58) : undefined;
 
   const renderItem = ({ item }: { item: ContentCardProps }) => (
     <ContentCard
       {...item}
       onPress={() => handleItemPress(item)}
       style={styles.card}
+      horizontalImage={horizontalCard}
+      horizontalImageHeight={horizontalImageHeight}
+      squareImage={squareCard}
+      squareImageHeight={squareCard ? CARD_WIDTH : undefined}
     />
   );
 
@@ -227,6 +238,10 @@ export const ContentListScreen: React.FC<ContentListScreenProps> = ({
           {...item}
           onPress={() => handleItemPress(item)}
           style={styles.card}
+          horizontalImage={horizontalCard}
+          horizontalImageHeight={horizontalImageHeight}
+          squareImage={squareCard}
+          squareImageHeight={squareCard ? CARD_WIDTH : undefined}
         />
       ))}
       {rowItems.length === 1 && <View style={styles.card} />}

@@ -51,6 +51,7 @@ export const HomeScreen = () => {
           title="Vídeos em Destaque"
           data={videos}
           onItemPress={handleItemPress}
+          horizontalCard={true}
         />
 
         {/* Seção 2: Séries Populares */}
@@ -58,6 +59,7 @@ export const HomeScreen = () => {
           title="Séries Populares"
           data={series}
           onItemPress={handleItemPress}
+          horizontalCard={true}
         />
 
         {/* Seção 3: Audiobooks Mais Ouvidos */}
@@ -72,6 +74,7 @@ export const HomeScreen = () => {
           title="Álbuns Mais Tocados"
           data={albums}
           onItemPress={handleItemPress}
+          squareCard={true}
         />
 
         {/* Seção 5: Ebooks Mais Lidos */}

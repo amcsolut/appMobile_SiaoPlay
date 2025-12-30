@@ -2,7 +2,7 @@
 
 Esta documentação descreve a arquitetura do projeto React Native.
 
-## 📁 Estrutura de Pastas
+## 📁 Estrutura de Pastas e arquivos
 
 ```
 src/

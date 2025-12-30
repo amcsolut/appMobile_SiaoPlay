@@ -8,17 +8,28 @@ interface CarouselProps {
   title: string;
   data: ContentCardProps[];
   onItemPress?: (item: ContentCardProps) => void;
+  horizontalCard?: boolean; // Se true, usa formato retangular horizontal (mais largo que alto)
+  squareCard?: boolean; // Se true, usa formato quadrado (width = height)
 }
 
 export const Carousel: React.FC<CarouselProps> = ({
   title,
   data,
   onItemPress,
+  horizontalCard = false,
+  squareCard = false,
 }) => {
   const { colors } = useTheme();
 
   if (!data || data.length === 0) {
     return null;
+  }
+
+  let cardStyle = styles.card;
+  if (horizontalCard) {
+    cardStyle = styles.horizontalCard;
+  } else if (squareCard) {
+    cardStyle = styles.squareCard;
   }
 
   return (
@@ -33,7 +44,9 @@ export const Carousel: React.FC<CarouselProps> = ({
             key={item.id}
             {...item}
             onPress={() => onItemPress?.(item)}
-            style={styles.card}
+            style={cardStyle}
+            horizontalImage={horizontalCard}
+            squareImage={squareCard}
           />
         ))}
       </ScrollView>
@@ -55,6 +68,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   card: {
+    width: 140,
+    marginRight: spacing.md,
+  },
+  horizontalCard: {
+    width: 240,
+    marginRight: spacing.md,
+  },
+  squareCard: {
     width: 140,
     marginRight: spacing.md,
   },

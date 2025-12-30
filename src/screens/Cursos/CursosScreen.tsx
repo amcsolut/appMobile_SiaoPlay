@@ -38,6 +38,7 @@ export const CursosScreen = () => {
       type="course"
       loadSlideshowData={homeService.getCoursesSlideshow}
       mapToSlideshowItem={mapToSlideshowItem}
+      horizontalCard={true}
     />
   );
 };

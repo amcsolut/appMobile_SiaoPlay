@@ -19,6 +19,10 @@ export interface ContentCardProps {
   onPress?: () => void;
   type?: 'video' | 'series' | 'audiobook' | 'album' | 'ebook' | 'course';
   style?: ViewStyle;
+  horizontalImage?: boolean; // Se true, usa formato retangular horizontal (mais largo que alto)
+  horizontalImageHeight?: number; // Altura customizada para imagem horizontal (se não informado, usa 140px)
+  squareImage?: boolean; // Se true, usa formato quadrado (width = height)
+  squareImageHeight?: number; // Altura customizada para imagem quadrada (se não informado, usa 140px)
 }
 
 export const ContentCard: React.FC<ContentCardProps> = ({
@@ -28,6 +32,10 @@ export const ContentCard: React.FC<ContentCardProps> = ({
   onPress,
   type = 'video',
   style,
+  horizontalImage = false,
+  horizontalImageHeight,
+  squareImage = false,
+  squareImageHeight,
 }) => {
   const { colors } = useTheme();
 
@@ -62,7 +70,13 @@ export const ContentCard: React.FC<ContentCardProps> = ({
       style={[styles.container, { backgroundColor: colors.card }, style]}
       onPress={onPress}
       activeOpacity={0.8}>
-      <View style={styles.imageContainer}>{renderImage()}</View>
+      <View style={[
+        styles.imageContainer, 
+        horizontalImage && [styles.imageContainerHorizontal, horizontalImageHeight ? { height: horizontalImageHeight } : null],
+        squareImage && [styles.imageContainerSquare, squareImageHeight ? { height: squareImageHeight } : null]
+      ]}>
+        {renderImage()}
+      </View>
       <View style={styles.content}>
         <Text
           style={[styles.title, { color: colors.foreground }]}
@@ -91,6 +105,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     overflow: 'hidden',
+  },
+  imageContainerHorizontal: {
+    height: 140, // Invertido: mais largo que alto (formato retangular horizontal)
+  },
+  imageContainerSquare: {
+    height: 140, // Quadrado: mesma altura que largura (140x140)
   },
   image: {
     width: '100%',

@@ -42,6 +42,7 @@ export const SeriesScreen = () => {
       type="series"
       loadSlideshowData={homeService.getSeriesSlideshow}
       mapToSlideshowItem={mapToSlideshowItem}
+      horizontalCard={true}
     />
   );
 };

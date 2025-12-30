@@ -41,6 +41,7 @@ export const MusicasScreen = () => {
       type="album"
       loadSlideshowData={homeService.getMusicSlideshow}
       mapToSlideshowItem={mapToSlideshowItem}
+      squareCard={true}
     />
   );
 };
